@@ -13,6 +13,20 @@ class EventoViewSet(ModelViewSet):
     queryset = Evento.objects.all()
     serializer_class = EventoSerializer
 
+    def create(self, request, *args, **kwargs):
+        """Impede a criação de eventos duplicados."""
+        nome = request.data.get('nome', '').strip()
+        data = request.data.get('data', '').strip()
+        local = request.data.get('local', '').strip()
+
+        if not nome or not data or not local:
+            return Response({"detail": "Todos os campos (nome, data e local) são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Evento.objects.filter(nome=nome, data=data, local=local).exists():
+            return Response({"detail": "Esse evento já está cadastrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
+
 class PagamentoViewSet(ModelViewSet):
     queryset = Pagamento.objects.all()
     serializer_class = PagamentoSerializer
@@ -35,11 +49,10 @@ class InscricaoViewSet(ModelViewSet):
             if inscricao.status != "confirmado":
                 return Response({"detail": "Você não pode solicitar devolução para esta inscrição."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Criar solicitação de devolução (aqui pode ser um novo modelo ou flag)
-            inscricao.status = "pendente"  # Simulando uma solicitação em análise
+            # Criar solicitação de devolução (simulando uma solicitação em análise)
+            inscricao.status = "pendente"
             inscricao.save()
 
-            # Simulação do envio para administração
             # Aqui poderia haver um sistema de notificação para os administradores
 
             return Response({"detail": "Sua solicitação de devolução foi enviada para análise."}, status=status.HTTP_200_OK)
