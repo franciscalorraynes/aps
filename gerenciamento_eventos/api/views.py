@@ -35,6 +35,22 @@ class InscricaoViewSet(ModelViewSet):
     queryset = Inscricao.objects.all()
     serializer_class = InscricaoSerializer
 
+    def create(self, request, *args, **kwargs):
+        usuario_id = request.data.get('usuario')
+        evento_id = request.data.get('evento')
+        pagamento_id = request.data.get('pagamento')
+
+        if not Usuario.objects.filter(id=usuario_id).exists():
+            return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not Evento.objects.filter(id=evento_id).exists():
+            return Response({"detail": "Evento não encontrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not Pagamento.objects.filter(id=pagamento_id).exists():
+            return Response({"detail": "Pagamento não encontrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def solicitar_devolucao(self, request, pk=None):
         """Rota personalizada para solicitar a devolução"""

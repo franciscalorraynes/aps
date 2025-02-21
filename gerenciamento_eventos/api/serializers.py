@@ -15,11 +15,15 @@ class PagamentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pagamento
         fields = '__all__'
-
 class InscricaoSerializer(serializers.ModelSerializer):
-    usuario = UsuarioSerializer(read_only=True)
-    evento = EventoSerializer(read_only=True)
-    pagamento = PagamentoSerializer(read_only=True)
+    class Meta:
+        model = Inscricao
+        fields = ['usuario', 'evento', 'pagamento', 'status', 'data_inscricao']  # Exclua os campos relacionados que são read_only
+
+    def create(self, validated_data):
+        # Aqui você pode criar a inscrição com base nos dados validados
+        return Inscricao.objects.create(**validated_data)
+
 
     class Meta:
         model = Inscricao
